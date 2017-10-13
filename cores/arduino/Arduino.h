@@ -130,9 +130,9 @@ void initVariant(void);
 
 int atexit(void (*func)()) __attribute__((weak));
 
-void pinMode(uint8_t, uint8_t);
-void digitalWrite(uint8_t, uint8_t);
-int digitalRead(uint8_t);
+void pinMode(int8_t, uint8_t);
+void digitalWrite(int8_t, uint8_t);
+int digitalRead(int8_t);
 int analogRead(uint8_t);
 void analogReference(uint8_t mode);
 void analogWrite(uint8_t, int);
@@ -149,6 +149,14 @@ uint8_t shiftIn(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder);
 
 void attachInterrupt(uint8_t, void (*)(void), int mode);
 void detachInterrupt(uint8_t);
+
+typedef struct {
+  void (*pinMode)(uint8_t);
+  void (*digitalWrite)(uint8_t);
+  int (*digitalRead)(void);
+} VirtualPin;
+
+void attachVirtualPin(int8_t, VirtualPin *);
 
 void setup(void);
 void loop(void);

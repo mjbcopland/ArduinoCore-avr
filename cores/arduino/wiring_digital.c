@@ -26,8 +26,20 @@
 #include "wiring_private.h"
 #include "pins_arduino.h"
 
-void pinMode(uint8_t pin, uint8_t mode)
+#if !defined(NUM_VIRTUAL_PINS)
+#define NUM_VIRTUAL_PINS 1
+#endif
+
+static VirtualPin *virtualPins[NUM_VIRTUAL_PINS];
+
+void attachVirtualPin(int8_t pin, VirtualPin *virtual) {
+	virtualPins[~pin] = virtual;
+}
+
+void pinMode(int8_t pin, uint8_t mode)
 {
+	if (pin < 0) return virtualPins[~pin]->pinMode(mode);
+
 	uint8_t bit = digitalPinToBitMask(pin);
 	uint8_t port = digitalPinToPort(pin);
 	volatile uint8_t *reg, *out;
@@ -135,8 +147,10 @@ static void turnOffPWM(uint8_t timer)
 	}
 }
 
-void digitalWrite(uint8_t pin, uint8_t val)
+void digitalWrite(int8_t pin, uint8_t val)
 {
+	if (pin < 0) return virtualPins[~pin]->digitalWrite(val);
+
 	uint8_t timer = digitalPinToTimer(pin);
 	uint8_t bit = digitalPinToBitMask(pin);
 	uint8_t port = digitalPinToPort(pin);
@@ -162,8 +176,10 @@ void digitalWrite(uint8_t pin, uint8_t val)
 	SREG = oldSREG;
 }
 
-int digitalRead(uint8_t pin)
+int digitalRead(int8_t pin)
 {
+	if (pin < 0) return virtualPins[~pin]->digitalRead();
+
 	uint8_t timer = digitalPinToTimer(pin);
 	uint8_t bit = digitalPinToBitMask(pin);
 	uint8_t port = digitalPinToPort(pin);
